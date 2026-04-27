@@ -381,11 +381,13 @@ function renderSummary() {
   const s = getSemana();
   if (!s) return;
   const ing = totalIng(s.ingresos);
-  // Solo suma egresos con monto real capturado
+  // Egresos muestra suma del presupuesto
+  const egrPresup = totalEgr(s.egresos, false);
+  // Balance usa solo gasto real capturado
   const egrReal = s.egresos.reduce((sum, e) => sum + (e.real != null ? e.real : 0), 0);
   const bal = ing - egrReal;
   document.getElementById('sumIngresos').textContent = fmt(ing);
-  document.getElementById('sumEgresos').textContent = fmt(egrReal);
+  document.getElementById('sumEgresos').textContent = fmt(egrPresup);
   const balEl = document.getElementById('sumBalance');
   balEl.textContent = fmt(bal);
   balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
