@@ -381,10 +381,11 @@ function renderSummary() {
   const s = getSemana();
   if (!s) return;
   const ing = totalIng(s.ingresos);
-  const egr = totalEgr(s.egresos, true);
-  const bal = ing - egr;
+  // Solo suma egresos con monto real capturado
+  const egrReal = s.egresos.reduce((sum, e) => sum + (e.real != null ? e.real : 0), 0);
+  const bal = ing - egrReal;
   document.getElementById('sumIngresos').textContent = fmt(ing);
-  document.getElementById('sumEgresos').textContent = fmt(egr);
+  document.getElementById('sumEgresos').textContent = fmt(egrReal);
   const balEl = document.getElementById('sumBalance');
   balEl.textContent = fmt(bal);
   balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
@@ -557,7 +558,7 @@ function htmlIngresos(s) {
 function htmlEgresos(s) {
   const ing = totalIng(s.ingresos);
   const egPresup = totalEgr(s.egresos, false);
-  const egReal = totalEgr(s.egresos, true);
+  const egReal = s.egresos.reduce((sum, e) => sum + (e.real != null ? e.real : 0), 0);
   const bal = ing - egReal;
 
   const rows = s.egresos.map(e => {
@@ -657,7 +658,7 @@ function updateEgresoPresup(id, val) {
 function actualizarTotalesEgr(s) {
   const ing = totalIng(s.ingresos);
   const egPresup = totalEgr(s.egresos, false);
-  const egReal = totalEgr(s.egresos, true);
+  const egReal = s.egresos.reduce((sum, e) => sum + (e.real != null ? e.real : 0), 0);
   const bal = ing - egReal;
   const infoEl = document.getElementById('egr-info');
   if (infoEl) infoEl.innerHTML =
