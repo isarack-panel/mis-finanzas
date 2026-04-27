@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0F1117"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Mis Finanzas"/>
+<title>Mis Finanzas</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0F1117;
+    --card: #1A1D27;
+    --border: #252836;
+    --accent: #6C63FF;
+    --green: #22C55E;
+    --yellow: #F59E0B;
+    --red: #EF4444;
+    --gray: #6B7280;
+    --text: #F0F0F5;
+    --muted: #9CA3AF;
+    --income: #10B981;
+    --expense: #F97316;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); font-family: 'Nunito', sans-serif; color: var(--text); }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { display: none; }
+  input { -webkit-appearance: none; }
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+  }
+
+  /* Header */
+  .header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 16px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-title { font-size: 20px; font-weight: 900; }
+  .header-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; }
+
+  /* Botones */
+  .btn { padding: 7px 13px; border-radius: 8px; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px; transition: opacity .15s; }
+  .btn:active { opacity: .7; }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-ghost { background: var(--border); color: var(--muted); }
+  .btn-danger { background: none; border: none; color: var(--red); cursor: pointer; font-size: 18px; padding: 0 4px; line-height: 1; }
+
+  /* Semanas strip */
+  .week-strip {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+  .week-pill {
+    padding: 5px 14px;
+    border-radius: 99px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    white-space: nowrap;
+    background: var(--border);
+    color: var(--muted);
+    transition: all .2s;
+  }
+  .week-pill.active { background: var(--accent); color: #fff; }
+
+  /* Summary */
+  .summary-row { display: flex; border-bottom: 1px solid var(--border); }
+  .summary-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 6px;
+    gap: 3px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+  }
+  .summary-card:last-child { border-right: none; }
+  .summary-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: .5px; }
+  .summary-value { font-size: 15px; font-weight: 800; }
+
+  /* Tabs */
+  .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    color: var(--muted);
+    transition: all .2s;
+  }
+  .tab-btn.active { border-bottom-color: var(--accent); color: var(--accent); }
+
+  /* Content */
+  .content { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .card-title { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: .8px; margin-bottom: 14px; }
+
+  /* Ingresos */
+  .ing-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .ing-total { color: var(--income); font-weight: 800; font-size: 18px; }
+  .ing-label { color: var(--income); font-weight: 700; font-size: 14px; }
+  .ing-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .ing-row:last-child { border-bottom: none; }
+  .ing-row label { font-size: 14px; color: var(--text); }
+  .input-wrap { display: flex; align-items: center; background: var(--bg); border-radius: 8px; padding: 7px 10px; gap: 4px; min-width: 120px; }
+  .peso-sign { color: var(--muted); font-size: 13px; }
+  .inp {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    width: 100%;
+  }
+  .inp::placeholder { color: #3A3D4E; font-weight: 400; }
+
+  /* Egresos */
+  .egr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .egr-cols { display: flex; gap: 6px; padding: 0 6px; margin-bottom: 6px; }
+  .egr-col-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: .5px; }
+
+  .egr-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-radius: 10px;
+    padding: 9px 10px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .egr-concepto { flex: 2; }
+  .egr-real-wrap { flex: 1.2; position: relative; }
+  .egr-presup-wrap { flex: 1.2; }
+  .watermark {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    color: #2e3145;
+    font-size: 10px;
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+  }
+  .inp-real { font-weight: 800; }
+
+  .egr-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 4px;
+  }
+
+  /* Donut */
+  #donut-canvas { display: block; margin: 0 auto; }
+  .legend { display: flex; flex-direction: column; gap: 7px; margin-top: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-name { font-size: 12px; color: var(--muted); flex: 1; }
+  .legend-pct { font-size: 12px; color: var(--text); font-weight: 700; }
+
+  /* Barras de progreso */
+  .progress-item { margin-bottom: 14px; }
+  .progress-labels { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .progress-name { font-size: 13px; color: var(--text); }
+  .progress-amounts { font-size: 12px; font-weight: 700; }
+  .progress-track { height: 7px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width .4s; }
+
+  /* Leyenda colores */
+  .color-legend { display: flex; flex-wrap: wrap; gap: 10px; }
+  .color-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .color-dot { width: 9px; height: 9px; border-radius: 99px; }
+
+  /* Empty state */
+  .empty { text-align: center; color: var(--muted); padding: 36px 20px; font-size: 14px; }
+
+  /* Modal nueva semana */
+  .modal-bg {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    width: 90%;
+    max-width: 340px;
+  }
+  .modal h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
+  .modal input[type=text] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 14px;
+  }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div>
+      <div class="header-title">💳 Mis Finanzas</div>
+      <div class="header-sub">Control semanal</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-accent" onclick="abrirModal(false)">+ Nueva</button>
+      <button class="btn btn-ghost" onclick="abrirModal(true)">📋 Copiar</button>
+    </div>
+  </div>
+
+  <div class="week-strip" id="weekStrip"></div>
+
+  <div class="summary-row">
+    <div class="summary-card">
+      <span class="summary-label">INGRESOS</span>
+      <span class="summary-value" id="sumIngresos" style="color:var(--income)">$0</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">EGRESOS</span>
+      <span class="summary-value" id="sumEgresos" style="color:var(--expense)">$0</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">BALANCE</span>
+      <span class="summary-value" id="sumBalance">$0</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setTab('resumen')" id="tab-resumen">📊 Resumen</button>
+    <button class="tab-btn" onclick="setTab('ingresos')" id="tab-ingresos">💰 Ingresos</button>
+    <button class="tab-btn" onclick="setTab('egresos')" id="tab-egresos">📤 Egresos</button>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Nueva semana</h3>
+    <input type="text" id="modalInput" placeholder="Ej: Semana 2" maxlength="30"/>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-accent" onclick="confirmarModal()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Estado ────────────────────────────────────────────────────────────────
+let state = {
+  semanas: [],
+  activaId: null,
+  tab: 'resumen',
+  modalCopiar: false
+};
+
+const COLORES = ['#6C63FF','#10B981','#F59E0B','#EF4444','#3B82F6','#EC4899','#8B5CF6','#06B6D4','#84CC16'];
+
+// ── Persistencia ──────────────────────────────────────────────────────────
+function guardar() {
+  try { localStorage.setItem('mf_state', JSON.stringify(state)); } catch(e) {}
+}
+function cargar() {
+  try {
+    const s = localStorage.getItem('mf_state');
+    if (s) { state = JSON.parse(s); return; }
+  } catch(e) {}
+  // Datos de ejemplo
+  const id = Date.now();
+  state = {
+    semanas: [{
+      id,
+      label: 'Semana 1',
+      ingresos: { sueldo: 5000, ventas: 1200, otro: 300 },
+      egresos: [
+        { id: 1, concepto: 'Renta', presupuesto: 2000, real: 2000 },
+        { id: 2, concepto: 'Supermercado', presupuesto: 800, real: 650 },
+        { id: 3, concepto: 'Transporte', presupuesto: 400, real: 520 },
+        { id: 4, concepto: 'Servicios', presupuesto: 300, real: null },
+      ]
+    }],
+    activaId: id,
+    tab: 'resumen',
+    modalCopiar: false
+  };
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────
+const fmt = n => n == null ? '—' : new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:2}).format(n);
+const getSemana = () => state.semanas.find(s => s.id === state.activaId);
+const totalIng = ing => (Number(ing.sueldo)||0)+(Number(ing.ventas)||0)+(Number(ing.otro)||0);
+const totalEgr = (egresos, real=false) => egresos.reduce((s,e) => s+(real?(e.real!=null?e.real:e.presupuesto):e.presupuesto), 0);
+function colorEgr(e) {
+  if (e.real == null) return '#6B7280';
+  if (e.real > e.presupuesto) return '#EF4444';
+  if (e.real >= e.presupuesto) return '#22C55E';
+  return '#F59E0B';
+}
+
+// ── Render principal ──────────────────────────────────────────────────────
+function render() {
+  guardar();
+  renderWeekStrip();
+  renderSummary();
+  renderTabs();
+  renderContent();
+}
+
+function renderWeekStrip() {
+  const el = document.getElementById('weekStrip');
+  el.innerHTML = state.semanas.map(s =>
+    `<button class="week-pill${s.id===state.activaId?' active':''}" onclick="setActiva(${s.id})">${s.label}</button>`
+  ).join('');
+}
+
+function renderSummary() {
+  const s = getSemana();
+  if (!s) return;
+  const ing = totalIng(s.ingresos);
+  // Egresos muestra suma del presupuesto
+  const egrPresup = totalEgr(s.egresos, false);
+  // Balance usa solo gasto real capturado
+  const egrReal = s.egresos.reduce((sum, e) => sum + (e.real != null ? e.real : 0), 0);
+  const bal = ing - egrReal;
+  document.getElementById('sumIngresos').textContent = fmt(ing);
+  document.getElementById('sumEgresos').textContent = fmt(egrPresup);
+  const balEl = document.getElementById('sumBalance');
+  balEl.textContent = fmt(bal);
+  balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+function renderTabs() {
+  ['resumen','ingresos','egresos'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t === state.tab);
+  });
+}
+
+function renderContent() {
+  const s = getSemana();
+  if (!s) return;
+  const el = document.getElementById('content');
+  if (state.tab === 'resumen') el.innerHTML = htmlResumen(s);
+  else if (state.tab === 'ingresos') el.innerHTML = htmlIngresos(s);
+  else el.innerHTML = htmlEgresos(s);
+
+  if (state.tab === 'resumen') drawDonut(s);
+}
+
+// ── HTML Resumen ──────────────────────────────────────────────────────────
+function htmlResumen(s) {
+  const ing = totalIng(s.ingresos);
+  const egrReal = totalEgr(s.egresos, true);
+
+  const barras = s.egresos.map(e => {
+    const pct = e.presupuesto > 0 ? Math.min(((e.real??e.presupuesto)/e.presupuesto)*100,100) : 0;
+    const color = colorEgr(e);
+    const realLabel = e.real != null ? fmt(e.real) : '—';
+    return `
+      <div class="progress-item">
+        <div class="progress-labels">
+          <span class="progress-name">${e.concepto||'Sin nombre'}</span>
+          <span class="progress-amounts" style="color:${color}">${realLabel} / ${fmt(e.presupuesto)}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <p class="card-title">DISTRIBUCIÓN DE GASTOS</p>
+      <canvas id="donut-canvas" width="200" height="200"></canvas>
+      <div class="legend" id="donut-legend"></div>
+    </div>
+    <div class="card">
+      <p class="card-title">PRESUPUESTO VS REAL</p>
+      ${barras || '<p class="empty">Sin egresos registrados</p>'}
+    </div>
+    <div class="card">
+      <p class="card-title">REFERENCIA DE COLORES</p>
+      <div class="color-legend">
+        <div class="color-item"><div class="color-dot" style="background:var(--green)"></div>Cumplido (100%)</div>
+        <div class="color-item"><div class="color-dot" style="background:var(--yellow)"></div>Parcial (&lt;100%)</div>
+        <div class="color-item"><div class="color-dot" style="background:var(--red)"></div>Excedido (&gt;100%)</div>
+        <div class="color-item"><div class="color-dot" style="background:var(--gray)"></div>Sin capturar</div>
+      </div>
+    </div>`;
+}
+
+function drawDonut(s) {
+  const canvas = document.getElementById('donut-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2;
+  const r = Math.min(W,H)*0.38;
+  const inner = r*0.6;
+
+  ctx.clearRect(0,0,W,H);
+
+  const segs = s.egresos.map((e,i) => ({
+    value: e.real != null ? e.real : e.presupuesto,
+    color: COLORES[i%COLORES.length],
+    label: e.concepto || 'Sin nombre'
+  })).filter(x => x.value > 0);
+
+  const total = segs.reduce((s,x) => s+x.value, 0) || 1;
+  let angle = -Math.PI/2;
+
+  if (segs.length === 0) {
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,0,2*Math.PI);
+    ctx.fillStyle = '#252836';
+    ctx.fill();
+  } else {
+    segs.forEach(seg => {
+      const slice = (seg.value/total)*2*Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,angle,angle+slice);
+      ctx.closePath();
+      ctx.fillStyle = seg.color;
+      ctx.fill();
+      angle += slice;
+    });
+  }
+
+  // Hoyo
+  ctx.beginPath();
+  ctx.arc(cx,cy,inner,0,2*Math.PI);
+  ctx.fillStyle = '#1A1D27';
+  ctx.fill();
+
+  // Texto balance
+  const ing = totalIng(s.ingresos);
+  const egr = totalEgr(s.egresos, true);
+  const bal = ing - egr;
+  ctx.fillStyle = bal >= 0 ? '#22C55E' : '#EF4444';
+  ctx.font = `bold 14px 'Nunito', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(fmt(bal), cx, cy-8);
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = `11px 'Nunito', sans-serif`;
+  ctx.fillText('Balance', cx, cy+10);
+
+  // Leyenda
+  const legEl = document.getElementById('donut-legend');
+  if (legEl) {
+    legEl.innerHTML = segs.map(seg => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${seg.color}"></div>
+        <span class="legend-name">${seg.label}</span>
+        <span class="legend-pct">${((seg.value/total)*100).toFixed(1)}%</span>
+      </div>`).join('');
+  }
+}
+
+// ── HTML Ingresos ─────────────────────────────────────────────────────────
+function htmlIngresos(s) {
+  const ing = s.ingresos;
+  const total = totalIng(ing);
+  return `
+    <div class="card">
+      <div class="ing-header">
+        <span class="ing-label">INGRESOS</span>
+        <span class="ing-total">${fmt(total)}</span>
+      </div>
+      <div class="ing-row">
+        <label>💼 Sueldo</label>
+        <div class="input-wrap">
+          <span class="peso-sign">$</span>
+          <input class="inp" type="number" inputmode="decimal" value="${ing.sueldo||''}" placeholder="0.00"
+            oninput="updateIngreso('sueldo',this.value)"/>
+        </div>
+      </div>
+      <div class="ing-row">
+        <label>🛍️ Ventas en efectivo</label>
+        <div class="input-wrap">
+          <span class="peso-sign">$</span>
+          <input class="inp" type="number" inputmode="decimal" value="${ing.ventas||''}" placeholder="0.00"
+            oninput="updateIngreso('ventas',this.value)"/>
+        </div>
+      </div>
+      <div class="ing-row">
+        <label>💰 Otro</label>
+        <div class="input-wrap">
+          <span class="peso-sign">$</span>
+          <input class="inp" type="number" inputmode="decimal" value="${ing.otro||''}" placeholder="0.00"
+            oninput="updateIngreso('otro',this.value)"/>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── HTML Egresos ──────────────────────────────────────────────────────────
+function htmlEgresos(s) {
+  const ing = totalIng(s.ingresos);
+  const egPresup = totalEgr(s.egresos, false);
+  const egReal = s.egresos.reduce((sum, e) => sum + (e.real != null ? e.real : 0), 0);
+  const bal = ing - egReal;
+
+  const rows = s.egresos.map(e => {
+    const color = colorEgr(e);
+    return `
+      <div class="egr-row" style="border-left-color:${color}" id="erow-${e.id}">
+        <div class="egr-concepto">
+          <input class="inp" type="text" value="${e.concepto}" placeholder="Concepto"
+            oninput="updateEgresoConcepto(${e.id},this.value)" style="font-size:13px"/>
+        </div>
+        <div class="egr-presup-wrap">
+          <input class="inp" type="number" inputmode="decimal"
+            value="${e.presupuesto}" placeholder="Presupuesto"
+            oninput="updateEgresoPresup(${e.id},this.value)"
+            style="color:var(--muted);font-size:13px"/>
+        </div>
+        <div class="egr-real-wrap">
+          <span class="watermark">${fmt(e.presupuesto)}</span>
+          <input class="inp inp-real" type="number" inputmode="decimal"
+            value="${e.real??''}" placeholder="${e.presupuesto}"
+            oninput="updateEgresoReal(${e.id},this.value)"
+            style="color:${color};position:relative;z-index:1;font-size:13px"/>
+        </div>
+        <button class="btn-danger" onclick="deleteEgreso(${e.id})">×</button>
+      </div>`;
+  }).join('');
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div id="egr-info" style="font-size:11px;color:var(--muted)">
+        Presup: <strong style="color:var(--text)">${fmt(egPresup)}</strong>
+        &nbsp;|&nbsp; Real: <strong style="color:var(--expense)">${fmt(egReal)}</strong>
+      </div>
+      <button class="btn btn-accent" onclick="addEgreso()">+ Agregar</button>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 10px;margin-bottom:4px">
+      <span style="flex:2;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px">CONCEPTO</span>
+      <span style="flex:1.2;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px">PRESUPUESTO</span>
+      <span style="flex:1.2;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px">REAL</span>
+      <span style="width:24px"></span>
+    </div>
+    ${rows || '<p class="empty">Sin egresos. Toca "+ Agregar" para comenzar.</p>'}
+    ${s.egresos.length > 0 ? `
+    <div class="egr-total-row">
+      <span style="font-size:14px;color:var(--muted)">Balance disponible</span>
+      <span id="egr-balance-val" style="font-size:18px;font-weight:800;color:${bal>=0?'var(--green)':'var(--red)'}">${fmt(bal)}</span>
+    </div>` : ''}`;
+}
+
+// ── Acciones ──────────────────────────────────────────────────────────────
+function setActiva(id) { state.activaId = id; render(); }
+function setTab(t) { state.tab = t; render(); }
+
+function updateIngreso(key, val) {
+  const s = getSemana();
+  s.ingresos[key] = parseFloat(val) || 0;
+  guardar();
+  renderSummary();
+  // Actualizar solo el total visible en la tarjeta sin rehacer el DOM
+  const totalEl = document.querySelector('.ing-total');
+  if (totalEl) totalEl.textContent = fmt(totalIng(s.ingresos));
+}
+
+function updateEgresoConcepto(id, val) {
+  const s = getSemana();
+  const e = s.egresos.find(x => x.id === id);
+  if (e) { e.concepto = val; guardar(); }
+}
+
+function updateEgresoReal(id, val) {
+  const s = getSemana();
+  const e = s.egresos.find(x => x.id === id);
+  if (!e) return;
+  e.real = val === '' ? null : parseFloat(val);
+  guardar();
+  renderSummary();
+  // Solo actualizar color del borde de la fila
+  const row = document.getElementById('erow-' + id);
+  if (row) row.style.borderLeftColor = colorEgr(e);
+  // Actualizar color del input real
+  const inp = row ? row.querySelector('.inp-real') : null;
+  if (inp) inp.style.color = colorEgr(e);
+  // Actualizar totales del pie
+  actualizarTotalesEgr(s);
+}
+
+function updateEgresoPresup(id, val) {
+  const s = getSemana();
+  const e = s.egresos.find(x => x.id === id);
+  if (!e) return;
+  e.presupuesto = parseFloat(val) || 0;
+  guardar();
+  renderSummary();
+  actualizarTotalesEgr(s);
+}
+
+function actualizarTotalesEgr(s) {
+  const ing = totalIng(s.ingresos);
+  const egPresup = totalEgr(s.egresos, false);
+  const egReal = s.egresos.reduce((sum, e) => sum + (e.real != null ? e.real : 0), 0);
+  const bal = ing - egReal;
+  const infoEl = document.getElementById('egr-info');
+  if (infoEl) infoEl.innerHTML =
+    `Presup: <strong style="color:var(--text)">${fmt(egPresup)}</strong> &nbsp;|&nbsp; Real: <strong style="color:var(--expense)">${fmt(egReal)}</strong>`;
+  const balEl = document.getElementById('egr-balance-val');
+  if (balEl) {
+    balEl.textContent = fmt(bal);
+    balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+}
+
+function addEgreso() {
+  const s = getSemana();
+  s.egresos.push({ id: Date.now(), concepto: '', presupuesto: 0, real: null });
+  render();
+}
+
+function deleteEgreso(id) {
+  const s = getSemana();
+  s.egresos = s.egresos.filter(x => x.id!==id);
+  render();
+}
+
+function abrirModal(copiar) {
+  state.modalCopiar = copiar;
+  document.getElementById('modalTitle').textContent = copiar ? 'Copiar semana actual' : 'Nueva semana';
+  const n = state.semanas.length + 1;
+  document.getElementById('modalInput').value = `Semana ${n}`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function cerrarModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function confirmarModal() {
+  const label = document.getElementById('modalInput').value.trim() || `Semana ${state.semanas.length+1}`;
+  const id = Date.now();
+  const base = getSemana();
+  let nueva;
+  if (state.modalCopiar && base) {
+    nueva = {
+      id, label,
+      ingresos: { ...base.ingresos },
+      egresos: base.egresos.map(e => ({ ...e, id: Date.now()+Math.random(), real: null }))
+    };
+  } else {
+    nueva = { id, label, ingresos: { sueldo:0, ventas:0, otro:0 }, egresos: [] };
+  }
+  state.semanas.push(nueva);
+  state.activaId = id;
+  state.tab = state.modalCopiar ? 'egresos' : 'ingresos';
+  cerrarModal();
+  render();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+cargar();
+render();
+</script>
+</body>
+</html>
